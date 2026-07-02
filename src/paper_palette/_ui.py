@@ -33,6 +33,18 @@ PICKER_SIZE = 180
 HUE_BAR_WIDTH = 26
 PICKER_STEP = 3
 
+APP_BG = "#F4F6F8"
+PANEL_BG = "#FFFFFF"
+BORDER = "#D8DEE7"
+TEXT = "#161A20"
+MUTED = "#667085"
+EMPTY_SWATCH = "#EEF1F5"
+FONT_BASE = ("Helvetica", 12)
+FONT_SMALL = ("Helvetica", 10)
+FONT_TITLE = ("Helvetica", 20, "bold")
+FONT_SECTION = ("Helvetica", 12, "bold")
+FONT_MONO = ("Menlo", 13)
+
 
 def preset_palette_state(
     preset_name: str,
@@ -52,8 +64,9 @@ class PaletteApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Paper Palette")
-        self.geometry("900x560")
+        self.geometry("960x700")
         self.resizable(False, False)
+        self.configure(bg=APP_BG)
 
         self.colors: list[str | None] = []
         self.locked: list[bool] = []
@@ -69,17 +82,67 @@ class PaletteApp(tk.Tk):
         self.preset_var = tk.StringVar(value="None")
         self.seed_enabled_var = tk.BooleanVar(value=False)
         self.seed_var = tk.StringVar(value="42")
-        self.status_var = tk.StringVar(value="Set n, roll the dice, click to lock, double-click to edit HEX.")
+        self.status_var = tk.StringVar(value="Set n, roll, click to lock, double-click to edit.")
 
         self._build_controls()
+        self._build_status_bar()
         self._build_swatch_area()
         self._set_count()
 
     def _build_controls(self) -> None:
-        controls = tk.Frame(self, padx=16, pady=14)
-        controls.pack(fill=tk.X)
+        header = tk.Frame(self, bg="#111827", padx=22, pady=14)
+        header.pack(fill=tk.X)
 
-        tk.Label(controls, text="n").grid(row=0, column=0, sticky="w")
+        tk.Label(
+            header,
+            text="Paper Palette",
+            bg="#111827",
+            fg="#FFFFFF",
+            font=FONT_TITLE,
+        ).grid(row=0, column=0, sticky="w")
+        tk.Label(
+            header,
+            text="Publication-ready palettes with presets, locks, export, and colorblind checks",
+            bg="#111827",
+            fg="#C9D2E3",
+            font=FONT_SMALL,
+        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
+        header.columnconfigure(0, weight=1)
+        tk.Button(
+            header,
+            text="Roll",
+            width=12,
+            command=self.roll,
+            bg="#FFFFFF",
+            fg=TEXT,
+            activebackground="#E8EEF9",
+            activeforeground=TEXT,
+            relief=tk.FLAT,
+            bd=0,
+            font=("Helvetica", 13, "bold"),
+            padx=12,
+            pady=7,
+            cursor="hand2",
+        ).grid(row=0, column=1, rowspan=2, sticky="e")
+
+        controls = tk.Frame(
+            self,
+            bg=PANEL_BG,
+            padx=18,
+            pady=14,
+            highlightthickness=1,
+            highlightbackground=BORDER,
+        )
+        controls.pack(fill=tk.X, padx=18, pady=(16, 8))
+
+        tk.Label(controls, text="Settings", bg=PANEL_BG, fg=TEXT, font=FONT_SECTION).grid(
+            row=0,
+            column=0,
+            columnspan=2,
+            sticky="w",
+        )
+
+        tk.Label(controls, text="n", bg=PANEL_BG, fg=MUTED, font=FONT_SMALL).grid(row=1, column=0, pady=(10, 0), sticky="w")
         n_spin = tk.Spinbox(
             controls,
             from_=1,
@@ -87,84 +150,137 @@ class PaletteApp(tk.Tk):
             textvariable=self.n_var,
             width=5,
             command=self._set_count,
+            font=FONT_BASE,
+            relief=tk.SOLID,
+            bd=1,
         )
-        n_spin.grid(row=0, column=1, padx=(6, 18), sticky="w")
+        n_spin.grid(row=2, column=0, padx=(0, 16), sticky="w")
         n_spin.bind("<Return>", lambda _event: self._set_count())
         n_spin.bind("<FocusOut>", lambda _event: self._set_count())
 
-        tk.Label(controls, text="mode").grid(row=0, column=2, sticky="w")
-        tk.OptionMenu(controls, self.mode_var, "aesthetic", "categorical").grid(
-            row=0,
-            column=3,
-            padx=(6, 18),
-            sticky="w",
-        )
+        self._control_label(controls, "mode", 1, 1)
+        self._option_menu(controls, self.mode_var, ("aesthetic", "categorical"), 2, 1, width=13)
 
-        tk.Label(controls, text="colorblind").grid(row=0, column=4, sticky="w")
-        tk.OptionMenu(controls, self.colorblind_var, *COLORBLIND_OPTIONS).grid(
-            row=0,
-            column=5,
-            padx=(6, 18),
-            sticky="w",
-        )
+        self._control_label(controls, "colorblind", 1, 2)
+        self._option_menu(controls, self.colorblind_var, tuple(COLORBLIND_OPTIONS), 2, 2, width=14)
 
-        tk.Button(controls, text="🎲", width=4, command=self.roll).grid(row=0, column=6, padx=(0, 8))
-
-        tk.Label(controls, text="background").grid(row=0, column=7, sticky="w")
-        tk.OptionMenu(controls, self.background_var, *BACKGROUND_OPTIONS).grid(
-            row=0,
-            column=8,
-            padx=(6, 0),
-            sticky="w",
-        )
-
-        tk.Label(controls, text="preset").grid(row=1, column=0, pady=(10, 0), sticky="w")
-        tk.OptionMenu(controls, self.preset_var, *PRESET_OPTIONS).grid(
-            row=1,
-            column=1,
-            columnspan=3,
-            padx=(6, 18),
-            pady=(10, 0),
-            sticky="w",
-        )
-        tk.Button(controls, text="Apply Preset", command=self.apply_preset).grid(
-            row=1,
-            column=4,
-            columnspan=2,
-            pady=(10, 0),
-            sticky="w",
-        )
-        tk.Button(controls, text="Save", command=self.save_png).grid(row=1, column=6, padx=(0, 8), pady=(10, 0))
-        tk.Button(controls, text="Copy Python Array", command=self.copy_array).grid(
-            row=1,
-            column=7,
-            columnspan=2,
-            pady=(10, 0),
-            sticky="w",
-        )
+        self._control_label(controls, "background", 1, 3)
+        self._option_menu(controls, self.background_var, tuple(BACKGROUND_OPTIONS), 2, 3, width=10)
 
         tk.Checkbutton(
             controls,
             text="Fixed seed",
             variable=self.seed_enabled_var,
             command=self._sync_seed_entry,
-        ).grid(row=2, column=0, columnspan=2, pady=(10, 0), sticky="w")
-        self.seed_entry = tk.Entry(controls, textvariable=self.seed_var, width=12)
-        self.seed_entry.grid(row=2, column=2, padx=(6, 18), pady=(10, 0), sticky="w")
+            bg=PANEL_BG,
+            fg=TEXT,
+            activebackground=PANEL_BG,
+            font=FONT_SMALL,
+        ).grid(row=1, column=4, pady=(10, 0), sticky="w")
+        self.seed_entry = tk.Entry(
+            controls,
+            textvariable=self.seed_var,
+            width=10,
+            font=FONT_BASE,
+            relief=tk.SOLID,
+            bd=1,
+        )
+        self.seed_entry.grid(row=2, column=4, padx=(0, 20), sticky="w")
 
-        controls.columnconfigure(9, weight=1)
-        tk.Label(controls, textvariable=self.status_var, anchor="e").grid(
-            row=2,
-            column=3,
-            columnspan=7,
-            padx=(14, 0),
-            pady=(10, 0),
+        tk.Frame(controls, height=1, bg=BORDER).grid(
+            row=3,
+            column=0,
+            columnspan=5,
+            sticky="ew",
+            pady=(14, 12),
+        )
+
+        tk.Label(controls, text="Preset", bg=PANEL_BG, fg=TEXT, font=FONT_SECTION).grid(
+            row=4,
+            column=0,
+            columnspan=2,
+            sticky="w",
+        )
+        self._control_label(controls, "library", 5, 0)
+        self._option_menu(controls, self.preset_var, tuple(PRESET_OPTIONS), 6, 0, width=18)
+        tk.Button(controls, text="Apply Preset", command=self.apply_preset).grid(
+            row=6,
+            column=1,
+            padx=(10, 18),
             sticky="ew",
         )
+
+        tk.Label(controls, text="Actions", bg=PANEL_BG, fg=TEXT, font=FONT_SECTION).grid(
+            row=4,
+            column=2,
+            columnspan=2,
+            sticky="w",
+        )
+        tk.Button(controls, text="Save PNG", command=self.save_png).grid(
+            row=6,
+            column=2,
+            padx=(0, 8),
+            sticky="ew",
+        )
+        tk.Button(controls, text="Copy Python Array", command=self.copy_array).grid(
+            row=6,
+            column=3,
+            padx=(0, 8),
+            sticky="ew",
+        )
+
+        controls.columnconfigure(0, weight=0)
+        controls.columnconfigure(3, weight=1)
         self._sync_seed_entry()
 
+    def _control_label(self, parent: tk.Widget, text: str, row: int, column: int) -> None:
+        tk.Label(parent, text=text, bg=PANEL_BG, fg=MUTED, font=FONT_SMALL).grid(
+            row=row,
+            column=column,
+            pady=(10, 0),
+            sticky="w",
+        )
+
+    def _option_menu(
+        self,
+        parent: tk.Widget,
+        variable: tk.StringVar,
+        options: tuple[str, ...],
+        row: int,
+        column: int,
+        width: int,
+    ) -> tk.OptionMenu:
+        menu = tk.OptionMenu(parent, variable, *options)
+        menu.configure(
+            width=width,
+            bg="#F8FAFC",
+            fg=TEXT,
+            activebackground="#EEF2F7",
+            activeforeground=TEXT,
+            highlightthickness=1,
+            highlightbackground=BORDER,
+            relief=tk.FLAT,
+            font=FONT_SMALL,
+        )
+        menu.grid(row=row, column=column, padx=(0, 16), sticky="w")
+        return menu
+
+    def _build_status_bar(self) -> None:
+        status = tk.Frame(self, bg=PANEL_BG, height=34, highlightthickness=1, highlightbackground=BORDER)
+        status.pack(side=tk.BOTTOM, fill=tk.X)
+        status.pack_propagate(False)
+        tk.Label(
+            status,
+            textvariable=self.status_var,
+            bg=PANEL_BG,
+            fg=MUTED,
+            anchor="w",
+            font=FONT_SMALL,
+            padx=18,
+        ).pack(fill=tk.BOTH, expand=True)
+
     def _build_swatch_area(self) -> None:
-        self.swatch_area = tk.Frame(self, padx=16, pady=10)
+        self.swatch_area = tk.Frame(self, bg=APP_BG, padx=18, pady=8)
         self.swatch_area.pack(fill=tk.BOTH, expand=True)
 
     def _sync_seed_entry(self) -> None:
@@ -202,17 +318,37 @@ class PaletteApp(tk.Tk):
 
         count = len(self.colors)
         columns = 4 if count <= 12 else 6
+        swatch_width = 206 if columns == 4 else 138
+        if count <= 8:
+            swatch_height = 112
+            code_font = FONT_MONO
+            lock_font = ("Helvetica", 9, "bold")
+        elif count <= 12:
+            swatch_height = 86
+            code_font = ("Menlo", 11)
+            lock_font = ("Helvetica", 8, "bold")
+        else:
+            swatch_height = 64
+            code_font = ("Menlo", 9)
+            lock_font = ("Helvetica", 8, "bold")
+
+        for column in range(6):
+            self.swatch_area.columnconfigure(column, weight=0)
+        for row in range(6):
+            self.swatch_area.rowconfigure(row, weight=0)
+
         for index in range(count):
-            wrapper = tk.Frame(self.swatch_area, padx=6, pady=6)
+            wrapper = tk.Frame(self.swatch_area, bg=APP_BG, padx=6, pady=6)
             wrapper.grid(row=index // columns, column=index % columns, sticky="nsew")
 
+            background = self.colors[index] or EMPTY_SWATCH
             swatch = tk.Frame(
                 wrapper,
-                width=150,
-                height=92,
-                bg=self.colors[index] or "#F4F4F4",
-                highlightthickness=2,
-                highlightbackground="#111111" if self.locked[index] else "#D7D7D7",
+                width=swatch_width,
+                height=swatch_height,
+                bg=background,
+                highlightthickness=3 if self.locked[index] else 1,
+                highlightbackground="#111827" if self.locked[index] else BORDER,
                 cursor="hand2",
             )
             swatch.pack(fill=tk.BOTH, expand=True)
@@ -222,10 +358,10 @@ class PaletteApp(tk.Tk):
 
             code_label = tk.Label(
                 swatch,
-                text=self.colors[index] or "",
-                bg=self.colors[index] or "#F4F4F4",
+                text=self.colors[index] or "EMPTY",
+                bg=background,
                 fg=self._text_color(self.colors[index]),
-                font=("Menlo", 13),
+                font=code_font,
             )
             code_label.pack(expand=True)
             code_label.bind("<Button-1>", lambda _event, i=index: self.schedule_toggle_lock(i))
@@ -234,11 +370,11 @@ class PaletteApp(tk.Tk):
             lock_label = tk.Label(
                 swatch,
                 text="LOCKED" if self.locked[index] else "",
-                bg=self.colors[index] or "#F4F4F4",
+                bg=background,
                 fg=self._text_color(self.colors[index]),
-                font=("Menlo", 9),
+                font=lock_font,
             )
-            lock_label.pack(side=tk.BOTTOM, pady=(0, 8))
+            lock_label.pack(side=tk.BOTTOM, pady=(0, 7 if columns == 4 else 4))
 
             self.swatches.append(swatch)
             self.labels.append(code_label)
