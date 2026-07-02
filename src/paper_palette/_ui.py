@@ -40,8 +40,9 @@ def preset_palette_state(
     mode: str,
     colorblind: str | None,
     background: str = "white",
+    seed: int | None = None,
 ) -> tuple[list[str], list[bool]]:
-    colors = Palette(mode=mode, colorblind=colorblind, background=background).preset(preset_name, n=n)
+    colors = Palette(mode=mode, seed=seed, colorblind=colorblind, background=background).preset(preset_name, n=n)
     locked_count = min(preset_size(preset_name), len(colors))
     locked = [index < locked_count for index in range(len(colors))]
     return colors, locked
@@ -66,6 +67,8 @@ class PaletteApp(tk.Tk):
         self.colorblind_var = tk.StringVar(value="None")
         self.background_var = tk.StringVar(value="White")
         self.preset_var = tk.StringVar(value="None")
+        self.seed_enabled_var = tk.BooleanVar(value=False)
+        self.seed_var = tk.StringVar(value="42")
         self.status_var = tk.StringVar(value="Set n, roll the dice, click to lock, double-click to edit HEX.")
 
         self._build_controls()
@@ -140,18 +143,36 @@ class PaletteApp(tk.Tk):
             sticky="w",
         )
 
+        tk.Checkbutton(
+            controls,
+            text="Fixed seed",
+            variable=self.seed_enabled_var,
+            command=self._sync_seed_entry,
+        ).grid(row=2, column=0, columnspan=2, pady=(10, 0), sticky="w")
+        self.seed_entry = tk.Entry(controls, textvariable=self.seed_var, width=12)
+        self.seed_entry.grid(row=2, column=2, padx=(6, 18), pady=(10, 0), sticky="w")
+
         controls.columnconfigure(9, weight=1)
         tk.Label(controls, textvariable=self.status_var, anchor="e").grid(
-            row=1,
-            column=9,
+            row=2,
+            column=3,
+            columnspan=7,
             padx=(14, 0),
             pady=(10, 0),
             sticky="ew",
         )
+        self._sync_seed_entry()
 
     def _build_swatch_area(self) -> None:
         self.swatch_area = tk.Frame(self, padx=16, pady=10)
         self.swatch_area.pack(fill=tk.BOTH, expand=True)
+
+    def _sync_seed_entry(self) -> None:
+        state = "normal" if self.seed_enabled_var.get() else "disabled"
+        self.seed_entry.configure(state=state)
+
+    def _current_seed(self) -> int | None:
+        return self._parse_seed(self.seed_enabled_var.get(), self.seed_var.get())
 
     def _set_count(self) -> None:
         try:
@@ -233,8 +254,10 @@ class PaletteApp(tk.Tk):
         locked_colors = [color for color, locked in zip(self.colors, self.locked) if locked and color]
 
         try:
+            seed = self._current_seed()
             generated = Palette(
                 mode=self.mode_var.get(),
+                seed=seed,
                 colorblind=COLORBLIND_OPTIONS[self.colorblind_var.get()],
                 background=BACKGROUND_OPTIONS[self.background_var.get()],
             ).generate(len(self.colors), seed_colors=locked_colors)
@@ -250,7 +273,8 @@ class PaletteApp(tk.Tk):
             self.colors[index] = new_colors[next_index]
             next_index += 1
 
-        self.status_var.set("Generated a new palette.")
+        seed_label = f" with seed {seed}" if seed is not None else ""
+        self.status_var.set(f"Generated a new palette{seed_label}.")
         self._render_swatches()
 
     def apply_preset(self) -> None:
@@ -261,12 +285,14 @@ class PaletteApp(tk.Tk):
 
         self._set_count()
         try:
+            seed = self._current_seed()
             colors, locked = preset_palette_state(
                 preset_name=preset_name,
                 n=len(self.colors),
                 mode=self.mode_var.get(),
                 colorblind=COLORBLIND_OPTIONS[self.colorblind_var.get()],
                 background=BACKGROUND_OPTIONS[self.background_var.get()],
+                seed=seed,
             )
         except ValueError as exc:
             messagebox.showerror("Preset", str(exc), parent=self)
@@ -276,7 +302,10 @@ class PaletteApp(tk.Tk):
         self.locked = locked
         self.n_var.set(len(colors))
         locked_count = sum(locked)
-        self.status_var.set(f"Applied preset: {self.preset_var.get()}; locked {locked_count} preset colors.")
+        seed_label = f"; seed {seed}" if seed is not None else ""
+        self.status_var.set(
+            f"Applied preset: {self.preset_var.get()}; locked {locked_count} preset colors{seed_label}."
+        )
         self._render_swatches()
 
     def toggle_lock(self, index: int) -> None:
@@ -559,6 +588,21 @@ class PaletteApp(tk.Tk):
         blue = int(hex_color[5:7], 16)
         luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255.0
         return "#111111" if luminance > 0.58 else "#FFFFFF"
+
+    @staticmethod
+    def _parse_seed(enabled: bool, value: str) -> int | None:
+        if not enabled:
+            return None
+        raw = value.strip()
+        if not raw:
+            raise ValueError("Seed must be an integer when Fixed seed is enabled.")
+        try:
+            seed = int(raw)
+        except ValueError as exc:
+            raise ValueError("Seed must be an integer.") from exc
+        if seed < 0:
+            raise ValueError("Seed must be 0 or a positive integer.")
+        return seed
 
     @staticmethod
     def _hex_to_hsv(hex_color: str) -> tuple[float, float, float]:

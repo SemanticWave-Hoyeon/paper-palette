@@ -247,10 +247,41 @@ def test_ui_preset_state_locks_all_visible_colors_when_n_fits_preset():
     assert locked == [True] * 6
 
 
+def test_ui_preset_state_uses_fixed_seed_for_extension():
+    first, first_locked = preset_palette_state(
+        preset_name="nejm",
+        n=10,
+        mode="categorical",
+        colorblind=None,
+        seed=17,
+    )
+    second, second_locked = preset_palette_state(
+        preset_name="nejm",
+        n=10,
+        mode="categorical",
+        colorblind=None,
+        seed=17,
+    )
+    assert first == second
+    assert first_locked == second_locked
+
+
 def test_ui_text_color_uses_readable_contrast():
     assert PaletteApp._text_color("#FFFFFF") == "#111111"
     assert PaletteApp._text_color("#000000") == "#FFFFFF"
     assert PaletteApp._text_color(None) == "#333333"
+
+
+def test_ui_seed_parser_uses_checkbox_state():
+    assert PaletteApp._parse_seed(False, "not-used") is None
+    assert PaletteApp._parse_seed(True, " 42 ") == 42
+    assert PaletteApp._parse_seed(True, "0") == 0
+    with pytest.raises(ValueError):
+        PaletteApp._parse_seed(True, "")
+    with pytest.raises(ValueError):
+        PaletteApp._parse_seed(True, "abc")
+    with pytest.raises(ValueError):
+        PaletteApp._parse_seed(True, "-1")
 
 
 def test_ui_color_picker_hsv_helpers_round_trip_hex():
