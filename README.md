@@ -9,13 +9,29 @@ It supports two different workflows:
 The library returns uppercase `#RRGGBB` strings and can preserve user-supplied
 colors while generating compatible remaining colors.
 
+## Features
+
+- Generates cohesive design palettes with `mode="aesthetic"`.
+- Generates distinct chart palettes with `mode="categorical"`.
+- Extends user-supplied colors while preserving them.
+- Supports colorblind-aware generation.
+- Includes journal-style presets for paper figures.
+- Provides a small Tkinter desktop UI.
+- Saves palette previews as PNG files without image-library dependencies.
+
 ## Installation
+
+From the project root:
 
 ```bash
 python3 -m pip install -e .
 ```
 
-For tests:
+This installs the `palette` package and the `palette-ui` command. Editable
+installation is recommended while the project is still local or under active
+development.
+
+Install test dependencies when developing:
 
 ```bash
 python3 -m pip install -e ".[test]"
@@ -24,20 +40,76 @@ python3 -m pytest -q
 
 ## Library Usage
 
+Import the main generator:
+
 ```python
 from palette import Palette
+```
 
-Palette(mode="aesthetic", seed=42).generate(n=5)
-Palette(mode="categorical", seed=42).generate(n=8)
-Palette(mode="aesthetic", seed=42).generate(n=6, seed_colors=["#1E88E5"])
-Palette(mode="categorical", colorblind="deuteranopia", seed=42).generate(n=6)
+Generate a cohesive design palette:
+
+```python
+colors = Palette(mode="aesthetic", seed=42).generate(n=5)
+print(colors)
+```
+
+Generate a distinct chart palette:
+
+```python
+colors = Palette(mode="categorical", seed=42).generate(n=8)
+print(colors)
+```
+
+Generate a colorblind-aware categorical palette:
+
+```python
+colors = Palette(
+    mode="categorical",
+    colorblind="deuteranopia",
+    seed=42,
+).generate(n=6)
 ```
 
 Seed colors are preserved at the beginning of the returned palette:
 
 ```python
-Palette(mode="aesthetic").generate(n=4, seed_colors=["#1E88E5"])
+colors = Palette(mode="aesthetic").generate(
+    n=4,
+    seed_colors=["#1E88E5"],
+)
+print(colors)
 # ["#1E88E5", ...]
+```
+
+Supported `mode` values:
+
+- `aesthetic`: visually cohesive palettes for UI, presentation, and design.
+- `categorical`: visually distinct palettes for charts and grouped data.
+
+Supported `colorblind` values:
+
+- `None`
+- `"protanopia"`
+- `"deuteranopia"`
+- `"tritanopia"`
+- `"achromatopsia"`
+
+Invalid input raises `ValueError`. Accepted color inputs include `#RGB`,
+`#RRGGBB`, and `#RRGGBBAA`; output is always normalized to uppercase
+`#RRGGBB`.
+
+## Choosing A Mode
+
+Use `aesthetic` when the palette should feel like one visual theme:
+
+```python
+Palette(mode="aesthetic").generate(n=6)
+```
+
+Use `categorical` when each color represents a different group in a figure:
+
+```python
+Palette(mode="categorical").generate(n=6)
 ```
 
 ## Presets
@@ -65,6 +137,14 @@ Included presets:
 Preset values copied from `#RRGGBBAA` sources are normalized to `#RRGGBB`.
 If `n` is larger than a preset, Palette keeps the preset colors first and
 generates compatible additional colors.
+
+Example:
+
+```python
+palette = Palette(mode="categorical", seed=7).preset("nejm", n=10)
+print(palette)
+# The first 8 colors are the NEJM preset; the last 2 are generated.
+```
 
 ## Desktop UI
 
@@ -94,6 +174,16 @@ When a preset is applied, preset colors are locked in the UI. If `n` is larger
 than the preset size, only the original preset colors are locked and the
 generated extra colors remain unlocked.
 
+Typical UI workflow:
+
+1. Set `n`.
+2. Choose a mode.
+3. Apply a preset or roll a random palette.
+4. Click any swatch to lock it.
+5. Roll again to regenerate only unlocked swatches.
+6. Double-click a swatch to type a HEX color manually.
+7. Save the palette PNG or copy the Python array string.
+
 ## Algorithm
 
 Palette uses OKLab/OKLCH internally so distances and harmony scores are closer
@@ -110,6 +200,17 @@ perceptual color space.
 Colorblind modes simulate protanopia, deuteranopia, tritanopia, and
 achromatopsia, then require generated colors to remain distinguishable after
 simulation.
+
+See [REFERENCES.md](REFERENCES.md) for the algorithmic sources and how they map
+to this implementation.
+
+## License
+
+Palette is released under the [MIT License](LICENSE).
+
+MIT is a good fit for this project because it is a short permissive license that
+allows use, modification, distribution, and commercial use while requiring the
+copyright and license notice to be preserved.
 
 ## Development
 
