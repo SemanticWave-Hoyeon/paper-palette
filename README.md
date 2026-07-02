@@ -308,6 +308,8 @@ or during local development:
 
 ```bash
 python3 paper_palette_ui.py
+# Legacy filename also works:
+python3 palette_ui.py
 ```
 
 The UI supports:
@@ -379,7 +381,7 @@ copyright and license notice to be preserved.
 ```bash
 python3 -m pip install -e ".[test]"
 python3 -m pytest -q
-python3 -m compileall -q src paper_palette_ui.py
+python3 -m compileall -q src paper_palette_ui.py palette_ui.py
 ```
 
 The project intentionally avoids image-generation dependencies for PNG export;
