@@ -42,7 +42,7 @@ PaperPalette(mode="categorical", seed=42).generate(n=8)
 import matplotlib.pyplot as plt
 from paper_palette import PaperPalette
 
-colors = PaperPalette(mode="categorical", seed=42).generate(n=8)
+colors = PaperPalette(mode="categorical", seed=73).generate(n=8)
 
 plt.pie([24, 18, 21, 14, 23], colors=colors[:5])
 plt.show()
