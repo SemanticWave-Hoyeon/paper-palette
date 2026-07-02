@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.0.0 - 2026-07-02
+
+First stable release.
+
+- Finalize the public `paper_palette` package API with `Palette`,
+  `PaperPalette`, presets, colorblind-aware generation, and PNG export support.
+- Polish the Tkinter desktop UI with grouped controls, a fixed-size layout,
+  larger swatches, a status bar, fixed-seed controls, and a canvas color picker.
+- Add README and Korean README installation guides, generated palette examples,
+  Matplotlib chart examples, and desktop UI screenshots.
+- Document algorithm and preset references.
+- Keep the project on MIT license with tests and GitHub Actions CI.
+
 ## v0.2.2 - 2026-07-02
 
 - Add incremental minimum-distance caches for aesthetic and categorical greedy
