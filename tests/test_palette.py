@@ -3,11 +3,11 @@ import re
 import numpy as np
 import pytest
 
-from palette import Palette, list_presets, preset_colors
-from palette._color import circular_mean_degrees, hex_to_rgb01, hue_distance, normalize_hex, oklab_to_oklch, rgb01_to_oklab
-from palette._colorblind import simulated_oklab
-from palette._png import save_palette_png
-from palette._ui import COLORBLIND_OPTIONS, PRESET_OPTIONS, PaletteApp, preset_palette_state
+from paper_palette import Palette, PaperPalette, list_presets, preset_colors
+from paper_palette._color import circular_mean_degrees, hex_to_rgb01, hue_distance, normalize_hex, oklab_to_oklch, rgb01_to_oklab
+from paper_palette._colorblind import simulated_oklab
+from paper_palette._png import save_palette_png
+from paper_palette._ui import COLORBLIND_OPTIONS, PRESET_OPTIONS, PaletteApp, preset_palette_state
 
 
 HEX_RE = re.compile(r"^#[0-9A-F]{6}$")
@@ -26,9 +26,10 @@ def test_normalize_hex_rejects_invalid_values(value):
 
 
 def test_import_smoke():
-    from palette import Palette as ImportedPalette
+    from paper_palette import Palette as ImportedPalette
 
     assert ImportedPalette is Palette
+    assert PaperPalette is Palette
 
 
 def test_generate_returns_requested_number_of_hex_colors():

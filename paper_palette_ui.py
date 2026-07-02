@@ -10,7 +10,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from palette._ui import main
+from paper_palette._ui import main
 
 
 if __name__ == "__main__":

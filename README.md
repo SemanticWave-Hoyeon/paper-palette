@@ -1,8 +1,11 @@
-# Palette
+# Paper Palette
 
 [한국어 README](README.ko.md)
 
-Palette is a Python library and small desktop UI for generating color palettes.
+A lightweight Python tool for generating publication-ready and colorblind-aware
+palettes using perceptual color spaces.
+
+Paper Palette is a Python library and small desktop UI for generating color palettes.
 It supports two different workflows:
 
 - `aesthetic`: cohesive palettes for UI, design, and presentation work.
@@ -18,7 +21,7 @@ colors while generating compatible remaining colors.
 ![Aesthetic palette generated with seed 42](docs/assets/aesthetic_seed42.png)
 
 ```python
-Palette(mode="aesthetic", seed=42).generate(n=6)
+PaperPalette(mode="aesthetic", seed=42).generate(n=6)
 ```
 
 **Categorical palette**
@@ -26,7 +29,7 @@ Palette(mode="aesthetic", seed=42).generate(n=6)
 ![Categorical palette generated with seed 42](docs/assets/categorical_seed42.png)
 
 ```python
-Palette(mode="categorical", seed=42).generate(n=8)
+PaperPalette(mode="categorical", seed=42).generate(n=8)
 ```
 
 **Colorblind-aware categorical palette**
@@ -34,7 +37,7 @@ Palette(mode="categorical", seed=42).generate(n=8)
 ![Deuteranopia-aware categorical palette generated with seed 42](docs/assets/deuteranopia_seed42.png)
 
 ```python
-Palette(mode="categorical", colorblind="deuteranopia", seed=42).generate(n=6)
+PaperPalette(mode="categorical", colorblind="deuteranopia", seed=42).generate(n=6)
 ```
 
 **Observable preset**
@@ -60,8 +63,8 @@ preset_colors("observable")
 Start by downloading the project from GitHub:
 
 ```bash
-git clone https://github.com/SemanticWave-Hoyeon/palette.git
-cd palette
+git clone https://github.com/SemanticWave-Hoyeon/paper-palette.git
+cd paper-palette
 ```
 
 Using a virtual environment is recommended:
@@ -83,7 +86,7 @@ Install the package from the project root:
 python3 -m pip install -e .
 ```
 
-This installs the `palette` package and the `palette-ui` command. Editable
+This installs the `paper_palette` package and the `paper-palette-ui` command. Editable
 installation is recommended while the project is still local or under active
 development.
 
@@ -91,15 +94,15 @@ Check that the library works:
 
 ```bash
 python3 - <<'PY'
-from palette import Palette
-print(Palette(mode="categorical", seed=42).generate(n=5))
+from paper_palette import PaperPalette
+print(PaperPalette(mode="categorical", seed=42).generate(n=5))
 PY
 ```
 
 Run the desktop UI:
 
 ```bash
-palette-ui
+paper-palette-ui
 ```
 
 Install test dependencies when developing:
@@ -114,27 +117,27 @@ python3 -m pytest -q
 Import the main generator:
 
 ```python
-from palette import Palette
+from paper_palette import PaperPalette
 ```
 
 Generate a cohesive design palette:
 
 ```python
-colors = Palette(mode="aesthetic", seed=42).generate(n=5)
+colors = PaperPalette(mode="aesthetic", seed=42).generate(n=5)
 print(colors)
 ```
 
 Generate a distinct chart palette:
 
 ```python
-colors = Palette(mode="categorical", seed=42).generate(n=8)
+colors = PaperPalette(mode="categorical", seed=42).generate(n=8)
 print(colors)
 ```
 
 Generate a colorblind-aware categorical palette:
 
 ```python
-colors = Palette(
+colors = PaperPalette(
     mode="categorical",
     colorblind="deuteranopia",
     seed=42,
@@ -144,7 +147,7 @@ colors = Palette(
 Seed colors are preserved at the beginning of the returned palette:
 
 ```python
-colors = Palette(mode="aesthetic").generate(
+colors = PaperPalette(mode="aesthetic").generate(
     n=4,
     seed_colors=["#1E88E5"],
 )
@@ -174,13 +177,13 @@ Invalid input raises `ValueError`. Accepted color inputs include `#RGB`,
 Use `aesthetic` when the palette should feel like one visual theme:
 
 ```python
-Palette(mode="aesthetic").generate(n=6)
+PaperPalette(mode="aesthetic").generate(n=6)
 ```
 
 Use `categorical` when each color represents a different group in a figure:
 
 ```python
-Palette(mode="categorical").generate(n=6)
+PaperPalette(mode="categorical").generate(n=6)
 ```
 
 ## Presets
@@ -188,11 +191,11 @@ Palette(mode="categorical").generate(n=6)
 Paper-style categorical presets are available from the public API:
 
 ```python
-from palette import Palette, list_presets, preset_colors
+from paper_palette import PaperPalette, list_presets, preset_colors
 
 list_presets()
 preset_colors("observable", n=5)
-Palette(mode="categorical").preset("nejm", n=10)
+PaperPalette(mode="categorical").preset("nejm", n=10)
 ```
 
 Included presets:
@@ -206,31 +209,55 @@ Included presets:
 - `jco`
 
 Preset values copied from `#RRGGBBAA` sources are normalized to `#RRGGBB`.
-If `n` is larger than a preset, Palette keeps the preset colors first and
+If `n` is larger than a preset, Paper Palette keeps the preset colors first and
 generates compatible additional colors.
 
 Example:
 
 ```python
-palette = Palette(mode="categorical", seed=7).preset("nejm", n=10)
+palette = PaperPalette(mode="categorical", seed=7).preset("nejm", n=10)
 print(palette)
 # The first 8 colors are the NEJM preset; the last 2 are generated.
 ```
 
+## API Reference
+
+| API | Purpose |
+| --- | --- |
+| `PaperPalette(mode="aesthetic", seed=None, colorblind=None)` | Main generator. `Palette` is kept as a shorter alias. |
+| `.generate(n, seed_colors=None)` | Return exactly `n` colors as uppercase `#RRGGBB` strings. |
+| `.preset(name, n=None, extend=True)` | Return a named preset. If `n` is larger than the preset and `extend=True`, compatible colors are generated after the preset colors. |
+| `list_presets()` | Return available preset names. |
+| `preset_colors(name, n=None)` | Return normalized colors for a preset. |
+
+`seed` makes generation reproducible. `seed_colors` are preserved at the front
+of the result, and invalid colors or invalid sizes raise `ValueError`.
+
+## Comparison Example
+
+The figure below compares a common Matplotlib categorical palette with Paper
+Palette's categorical and colorblind-aware outputs.
+
+![Matplotlib tab10 compared with Paper Palette categorical palettes](docs/assets/comparison_matplotlib.png)
+
+Paper Palette is not intended to replace full color science packages such as
+`colorspace`. It aims to make publication-ready categorical palettes, preset
+extension, and a lightweight locking UI easy to use from a small Python package.
+
 ## Desktop UI
 
-![Palette desktop UI with the Observable preset applied](docs/assets/desktop_ui.png)
+![Paper Palette desktop UI with the Observable preset applied](docs/assets/desktop_ui.png)
 
 Run the UI with either command:
 
 ```bash
-palette-ui
+paper-palette-ui
 ```
 
 or during local development:
 
 ```bash
-python3 palette_ui.py
+python3 paper_palette_ui.py
 ```
 
 The UI supports:
@@ -259,7 +286,7 @@ Typical UI workflow:
 
 ## Algorithm
 
-Palette uses OKLab/OKLCH internally so distances and harmony scores are closer
+Paper Palette uses OKLab/OKLCH internally so distances and harmony scores are closer
 to visual perception than raw RGB or HSV.
 
 The `aesthetic` mode is score-and-rerank based. It samples many candidate
@@ -279,7 +306,7 @@ to this implementation.
 
 ## License
 
-Palette is released under the [MIT License](LICENSE).
+Paper Palette is released under the [MIT License](LICENSE).
 
 MIT is a good fit for this project because it is a short permissive license that
 allows use, modification, distribution, and commercial use while requiring the
@@ -290,7 +317,7 @@ copyright and license notice to be preserved.
 ```bash
 python3 -m pip install -e ".[test]"
 python3 -m pytest -q
-python3 -m compileall -q src palette_ui.py
+python3 -m compileall -q src paper_palette_ui.py
 ```
 
 The project intentionally avoids image-generation dependencies for PNG export;

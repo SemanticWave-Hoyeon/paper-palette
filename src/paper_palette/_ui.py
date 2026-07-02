@@ -37,7 +37,7 @@ def preset_palette_state(
 class PaletteApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("Palette")
+        self.title("Paper Palette")
         self.geometry("900x560")
         self.resizable(False, False)
 

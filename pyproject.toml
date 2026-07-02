@@ -3,9 +3,9 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "palette"
+name = "paper-palette"
 version = "0.1.0"
-description = "Research-informed color palette generation for design and categorical charts."
+description = "Publication-ready and colorblind-aware palette generation with perceptual color spaces."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [
   { name = "Hoyeon Cho" }
 ]
-keywords = ["color", "palette", "oklab", "visualization", "tkinter"]
+keywords = ["color", "palette", "paper", "oklab", "oklch", "visualization", "tkinter"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -30,11 +30,11 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/SemanticWave-Hoyeon/palette"
-Issues = "https://github.com/SemanticWave-Hoyeon/palette/issues"
+Repository = "https://github.com/SemanticWave-Hoyeon/paper-palette"
+Issues = "https://github.com/SemanticWave-Hoyeon/paper-palette/issues"
 
 [project.scripts]
-palette-ui = "palette._ui:main"
+paper-palette-ui = "paper_palette._ui:main"
 
 [project.optional-dependencies]
 test = [
