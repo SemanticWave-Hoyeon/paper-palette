@@ -247,10 +247,12 @@ PaperPalette(mode="categorical").preset("nejm", n=10)
 - `npg`
 - `observable`
 - `bmj`
+- `jama`
 - `science`
 - `nejm`
 - `lancet`
 - `jco`
+- `frontiers`
 - `petroff6`
 - `petroff8`
 - `petroff10`

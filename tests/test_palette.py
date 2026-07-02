@@ -96,14 +96,33 @@ def test_generated_color_sort_uses_rainbow_like_order():
 
 def test_preset_colors_are_public_and_normalized():
     assert "npg" in list_presets()
+    assert "jama" in list_presets()
+    assert "frontiers" in list_presets()
     assert "petroff10" in list_presets()
     assert preset_colors("obs", n=3) == ["#4269D0", "#EFB118", "#FF725C"]
     assert preset_colors("accessible8", n=2) == ["#1845FB", "#FF5E02"]
+    assert preset_colors("jama", n=3) == ["#374E55", "#DF8F44", "#00A1D5"]
+    assert preset_colors("frontiers", n=3) == ["#D51317", "#F39200", "#EFD500"]
+    assert preset_colors("journal of the american medical association", n=1) == ["#374E55"]
+    assert preset_colors("frontiers10", n=1) == ["#D51317"]
     assert Palette(mode="categorical", seed=5).preset("nejm", n=3) == [
         "#BC3C29",
         "#0072B5",
         "#E18727",
     ]
+
+
+def test_verified_journal_presets_match_source_sizes():
+    assert len(preset_colors("npg")) == 10
+    assert len(preset_colors("science")) == 10
+    assert len(preset_colors("nejm")) == 8
+    assert len(preset_colors("lancet")) == 9
+    assert len(preset_colors("jama")) == 7
+    assert len(preset_colors("bmj")) == 9
+    assert len(preset_colors("jco")) == 10
+    assert len(preset_colors("frontiers")) == 10
+    assert preset_colors("jco")[-1] == "#4A6990"
+    assert len(preset_colors("jco10")) == 10
 
 
 def test_palette_preset_can_extend_beyond_preset_size():

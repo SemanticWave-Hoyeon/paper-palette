@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.0 - 2026-07-02
+
+- Audit bundled journal-style preset HEX values against the `ggsci` palette
+  source.
+- Fix the JCO preset by restoring the missing 10th color, `#4A6990`.
+- Add `jama` and `frontiers` journal-style presets.
+- Add `docs/PRESET_AUDIT.md` with exact source mapping and checked values.
+- Update README preset lists across all supported languages.
+
 ## v1.1.0 - 2026-07-02
 
 - Add `harmony` control for aesthetic palettes.

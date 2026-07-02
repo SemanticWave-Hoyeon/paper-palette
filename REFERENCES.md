@@ -83,9 +83,12 @@ for charts should offer colorblind-aware options.
 
 The bundled journal-style presets follow the same broad family of scientific
 figure palettes popularized by packages such as `ggsci`: NPG, AAAS/Science,
-NEJM, Lancet, JCO, BMJ, and Observable-style categorical colors. The bundled
-`petroff6`, `petroff8`, and `petroff10` presets follow the final accessible
-color-cycle results published with Petroff's repository.
+NEJM, Lancet, JAMA, JCO, BMJ, Frontiers, and Observable-style categorical
+colors. The bundled `petroff6`, `petroff8`, and `petroff10` presets follow the
+final accessible color-cycle results published with Petroff's repository.
+
+See [docs/PRESET_AUDIT.md](docs/PRESET_AUDIT.md) for the checked HEX values,
+the source palette names, and the corrections made to the bundled presets.
 
 The preset names are descriptive labels for familiar palette styles. They do
 not imply endorsement by, affiliation with, or trademark permission from the

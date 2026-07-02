@@ -292,10 +292,12 @@ Included presets:
 - `npg`
 - `observable`
 - `bmj`
+- `jama`
 - `science`
 - `nejm`
 - `lancet`
 - `jco`
+- `frontiers`
 - `petroff6`
 - `petroff8`
 - `petroff10`
