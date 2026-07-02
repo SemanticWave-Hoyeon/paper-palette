@@ -19,6 +19,8 @@ from ._colorblind import COLORBLIND_MODES, simulated_oklab
 from ._presets import preset_colors
 
 MODES = {"aesthetic", "categorical"}
+HUE_SORT_START_DEGREES = 350.0
+NEUTRAL_CHROMA_THRESHOLD = 0.035
 
 
 @dataclass(frozen=True)
@@ -82,7 +84,8 @@ class Palette:
                 seed_sim_lab,
             )
 
-        return normalized + [rgb01_to_hex(rgb) for rgb in generated_rgb]
+        generated = _sort_generated_colors([rgb01_to_hex(rgb) for rgb in generated_rgb])
+        return normalized + generated
 
     def preset(self, name: str, n: int | None = None, extend: bool = True) -> list[str]:
         colors = preset_colors(name)
@@ -493,3 +496,26 @@ class Palette:
         if np.isfinite(scores).any():
             return int(np.nanargmax(scores))
         return int(np.nanargmax(np.where(np.isnan(scores), -np.inf, scores)))
+
+
+def _sort_generated_colors(colors: list[str]) -> list[str]:
+    """Order generated colors by perceptual hue so neighboring swatches feel related."""
+    if len(colors) <= 1:
+        return colors
+
+    rgb = np.array([hex_to_rgb01(color) for color in colors], dtype=float)
+    lch = oklab_to_oklch(rgb01_to_oklab(rgb))
+    order = sorted(range(len(colors)), key=lambda index: _palette_order_key(lch[index]))
+    return [colors[index] for index in order]
+
+
+def _palette_order_key(lch: np.ndarray) -> tuple[int, float, float, float]:
+    lightness = float(lch[0])
+    chroma = float(lch[1])
+    hue = float(lch[2])
+
+    if chroma < NEUTRAL_CHROMA_THRESHOLD:
+        return (1, -lightness, 0.0, 0.0)
+
+    hue_position = (hue - HUE_SORT_START_DEGREES) % 360.0
+    return (0, hue_position, -chroma, -lightness)

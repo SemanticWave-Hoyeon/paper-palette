@@ -6,6 +6,7 @@ import pytest
 from paper_palette import Palette, PaperPalette, list_presets, preset_colors
 from paper_palette._color import circular_mean_degrees, hex_to_rgb01, hue_distance, normalize_hex, oklab_to_oklch, rgb01_to_oklab
 from paper_palette._colorblind import simulated_oklab
+from paper_palette._palette import HUE_SORT_START_DEGREES, _sort_generated_colors
 from paper_palette._png import save_palette_png
 from paper_palette._ui import COLORBLIND_OPTIONS, PRESET_OPTIONS, PaletteApp, preset_palette_state
 
@@ -51,6 +52,25 @@ def test_seed_colors_are_preserved_at_front():
     )
     assert colors[:2] == ["#1E88E5", "#FFC107"]
     assert len(colors) == 5
+
+
+def test_generated_colors_are_sorted_by_perceptual_hue():
+    colors = Palette(mode="categorical", seed=23).generate(n=8)
+    assert _is_hue_sorted(colors)
+
+
+def test_seed_colors_are_preserved_before_sorted_generated_suffix():
+    colors = Palette(mode="categorical", seed=23).generate(
+        n=7,
+        seed_colors=["#0000FF", "#FF0000"],
+    )
+    assert colors[:2] == ["#0000FF", "#FF0000"]
+    assert _is_hue_sorted(colors[2:])
+
+
+def test_generated_color_sort_uses_rainbow_like_order():
+    colors = _sort_generated_colors(["#0000FF", "#00FF00", "#FF7F00", "#FF0000"])
+    assert colors == ["#FF0000", "#FF7F00", "#00FF00", "#0000FF"]
 
 
 def test_preset_colors_are_public_and_normalized():
@@ -167,3 +187,10 @@ def test_save_palette_png_writes_valid_png(tmp_path):
     assert data.startswith(b"\x89PNG\r\n\x1a\n")
     assert b"IHDR" in data[:32]
     assert output.stat().st_size > 100
+
+
+def _is_hue_sorted(colors):
+    rgb = np.array([hex_to_rgb01(color) for color in colors])
+    lch = oklab_to_oklch(rgb01_to_oklab(rgb))
+    hue_positions = [float((item[2] - HUE_SORT_START_DEGREES) % 360.0) for item in lch]
+    return hue_positions == sorted(hue_positions)

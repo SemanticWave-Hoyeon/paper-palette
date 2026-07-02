@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Sort newly generated colors by OKLCH hue so random palettes display in a
+  warm-to-cool visual order.
+- Preserve seed and preset positions while sorting only generated additions.
+
 ## v0.1.0 - 2026-07-02
 
 Initial public release.

@@ -12,7 +12,9 @@ It supports two different workflows:
 - `categorical`: distinct palettes for papers, charts, and grouped data.
 
 The library returns uppercase `#RRGGBB` strings and can preserve user-supplied
-colors while generating compatible remaining colors.
+colors while generating compatible remaining colors. Generated colors are ordered
+by perceptual hue, so neighboring swatches tend to follow a red, orange, yellow,
+green, blue, violet-like flow.
 
 ## Examples
 
@@ -53,6 +55,7 @@ preset_colors("observable")
 - Generates cohesive design palettes with `mode="aesthetic"`.
 - Generates distinct chart palettes with `mode="categorical"`.
 - Extends user-supplied colors while preserving them.
+- Sorts newly generated colors by OKLCH hue for easier visual scanning.
 - Supports colorblind-aware generation.
 - Includes journal-style presets for paper figures.
 - Provides a small Tkinter desktop UI.
@@ -231,7 +234,8 @@ print(palette)
 | `preset_colors(name, n=None)` | Return normalized colors for a preset. |
 
 `seed` makes generation reproducible. `seed_colors` are preserved at the front
-of the result, and invalid colors or invalid sizes raise `ValueError`.
+of the result, while newly generated colors after them are sorted by perceptual
+hue. Invalid colors or invalid sizes raise `ValueError`.
 
 ## Comparison Example
 
@@ -272,7 +276,9 @@ The UI supports:
 
 When a preset is applied, preset colors are locked in the UI. If `n` is larger
 than the preset size, only the original preset colors are locked and the
-generated extra colors remain unlocked.
+generated extra colors remain unlocked. Rolling without locked colors displays
+the generated palette in hue order; when some swatches are locked, their
+positions are preserved and only the regenerated swatches are hue-sorted.
 
 Typical UI workflow:
 
@@ -296,6 +302,11 @@ duplicate avoidance, and penalties for muddy or neon-heavy colors.
 
 The `categorical` mode uses a Glasbey-style greedy farthest-point strategy in
 perceptual color space.
+
+After generation, Paper Palette sorts generated colors by OKLCH hue. This does
+not change which colors were selected; it only makes the returned list and UI
+swatches easier to read from warm colors through greens and blues to violets.
+Seed colors and preset colors keep their documented positions.
 
 Colorblind modes simulate protanopia, deuteranopia, tritanopia, and
 achromatopsia, then require generated colors to remain distinguishable after
