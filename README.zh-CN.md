@@ -306,6 +306,26 @@ OKLab 距离、色觉模拟后的距离、背景对比和运行时间测量见
 
 ![Paper Palette desktop UI with the Observable preset applied](docs/assets/desktop_ui.png)
 
+## Web UI
+
+浏览器版 UI 作为静态 GitHub Pages 网站运行：
+
+```text
+https://semanticwave-hoyeon.github.io/paper-palette/
+```
+
+GitHub Pages 托管 HTML、CSS 和 JavaScript 等静态文件。因此 Web UI 不是在
+Python 服务器上运行，而是在浏览器中生成调色板。它支持生成调色板、应用预设、
+锁定颜色、使用浏览器颜色选择器编辑、复制 Python 数组字符串以及保存 PNG。
+
+本地预览：
+
+```bash
+python3 -m http.server 8000 --directory docs
+```
+
+然后打开 `http://localhost:8000`。
+
 运行：
 
 ```bash

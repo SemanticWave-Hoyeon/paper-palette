@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0 - 2026-07-08
+
+- Add a browser-based Paper Palette web UI under `docs/`.
+- Add GitHub Pages deployment workflow for free static hosting from the public
+  repository.
+- Support web palette generation, presets, locks, browser color editing,
+  Python array copy, and PNG export.
+- Document the hosted web UI entry point.
+
 ## v1.2.0 - 2026-07-02
 
 - Audit bundled journal-style preset HEX values against the `ggsci` palette

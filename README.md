@@ -355,6 +355,27 @@ colorblind-simulation separation, background contrast, and runtime checks.
 
 ![Paper Palette desktop UI with the Observable preset applied](docs/assets/desktop_ui.png)
 
+## Web UI
+
+The browser UI runs as a static GitHub Pages site:
+
+```text
+https://semanticwave-hoyeon.github.io/paper-palette/
+```
+
+GitHub Pages hosts static HTML, CSS, and JavaScript, so the web UI runs the
+palette generator in the browser rather than on a Python server. It supports
+rolling palettes, applying presets, locking colors, editing colors with the
+browser color picker, copying a Python array string, and saving a PNG.
+
+For local preview:
+
+```bash
+python3 -m http.server 8000 --directory docs
+```
+
+Then open `http://localhost:8000`.
+
 Run the UI with either command:
 
 ```bash

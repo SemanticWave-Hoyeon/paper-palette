@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Paper Palette Web UI</title>
+    <meta
+      name="description"
+      content="Browser-based Paper Palette UI for generating publication-ready and colorblind-aware color palettes."
+    />
+    <link rel="stylesheet" href="./web/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-label="Palette generator">
+        <div>
+          <h1>Paper Palette</h1>
+          <p>Generate publication-ready palettes directly in your browser.</p>
+        </div>
+        <button class="primary-action" id="rollButton" type="button">Roll</button>
+      </section>
+
+      <section class="control-panel" aria-label="Generator controls">
+        <div class="control-block settings-block">
+          <h2>Settings</h2>
+          <div class="control-grid">
+            <label>
+              <span>n</span>
+              <input id="countInput" type="number" min="1" max="24" value="6" />
+            </label>
+            <label>
+              <span>mode</span>
+              <select id="modeSelect">
+                <option value="aesthetic">aesthetic</option>
+                <option value="categorical">categorical</option>
+              </select>
+            </label>
+            <label>
+              <span>harmony</span>
+              <select id="harmonySelect">
+                <option value="stable">stable</option>
+                <option value="expressive">expressive</option>
+                <option value="analogous">analogous</option>
+                <option value="monochrome_accent">monochrome_accent</option>
+                <option value="split_complementary">split_complementary</option>
+                <option value="triadic">triadic</option>
+              </select>
+            </label>
+            <label>
+              <span>colorblind</span>
+              <select id="colorblindSelect">
+                <option value="">None</option>
+                <option value="protanopia">protanopia</option>
+                <option value="deuteranopia">deuteranopia</option>
+                <option value="tritanopia">tritanopia</option>
+                <option value="achromatopsia">achromatopsia</option>
+              </select>
+            </label>
+            <label>
+              <span>background</span>
+              <select id="backgroundSelect">
+                <option value="white">white</option>
+                <option value="black">black</option>
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+              </select>
+            </label>
+            <label class="seed-toggle">
+              <span>fixed seed</span>
+              <div class="inline-seed">
+                <input id="seedEnabled" type="checkbox" />
+                <input id="seedInput" type="number" min="0" value="42" disabled />
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-block preset-block">
+            <h2>Preset</h2>
+            <div class="preset-controls">
+              <label>
+                <span>library</span>
+                <select id="presetSelect"></select>
+              </label>
+              <button id="applyPresetButton" type="button">Apply Preset</button>
+            </div>
+          </div>
+          <div class="control-block action-block">
+            <h2>Actions</h2>
+            <div class="button-row">
+              <button id="copyButton" type="button">Copy Python Array</button>
+              <button id="saveButton" type="button">Save PNG</button>
+              <button id="clearLocksButton" type="button">Clear Locks</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="palette-grid" id="paletteGrid" aria-label="Generated palette"></section>
+      <p class="status-bar" id="statusBar" role="status">Set n, roll, click to lock, use the color picker to edit.</p>
+    </main>
+
+    <dialog id="editDialog" class="edit-dialog">
+      <form method="dialog">
+        <div class="dialog-header">
+          <h2>Edit color</h2>
+          <button class="icon-button" value="cancel" aria-label="Close" type="submit">x</button>
+        </div>
+        <div class="edit-content">
+          <label class="color-picker-label">
+            <span>picker</span>
+            <input id="dialogColorInput" type="color" value="#1e88e5" />
+          </label>
+          <label>
+            <span>HEX</span>
+            <input id="dialogHexInput" type="text" value="#1E88E5" spellcheck="false" />
+          </label>
+          <div class="dialog-preview" id="dialogPreview"></div>
+        </div>
+        <div class="dialog-actions">
+          <button id="dialogApplyButton" value="default" type="button">Apply</button>
+          <button id="dialogClearButton" value="default" type="button">Clear</button>
+          <button value="cancel" type="submit">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./web/app.js"></script>
+  </body>
+</html>
